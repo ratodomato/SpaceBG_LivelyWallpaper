@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estrelas 3D com Cores Ciano e Azul</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: rgb(0, 27, 25);
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Cena, câmera e renderizador
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Número de estrelas
+        const numEstrelas = 6000;
+
+        // Geometria e material para partículas
+        const geometriaEstrelas = new THREE.BufferGeometry();
+        const posicoes = new Float32Array(numEstrelas * 3); // 3 valores por vértice
+        const cores = new Float32Array(numEstrelas * 3); // Cor RGB para cada estrela
+
+        // Gerar posições e cores
+        for (let i = 0; i < numEstrelas; i++) {
+            const idx = i * 3;
+
+            // Posição aleatória
+            posicoes[idx] = (Math.random() - 0.5) * 800; // x
+            posicoes[idx + 1] = (Math.random() - 0.5) * 800; // y
+            posicoes[idx + 2] = (Math.random() - 0.5) * 800; // z
+
+            // Cor aleatória (ciano ou azul)
+            const corCiano = Math.random() > 0.5;
+            cores[idx] = corCiano ? 0 : 0.462; // R
+            cores[idx + 1] = corCiano ? 1 : 0.537; // G
+            cores[idx + 2] = corCiano ? 1 : 0.870; // B
+        }
+
+        // Atribuir posições e cores à geometria
+        geometriaEstrelas.setAttribute('position', new THREE.BufferAttribute(posicoes, 3));
+        geometriaEstrelas.setAttribute('color', new THREE.BufferAttribute(cores, 3));
+
+        // Material para partículas
+        const materialEstrelas = new THREE.PointsMaterial({
+            size: 1.0,
+            vertexColors: true, // Usa as cores da geometria
+            transparent: false,
+            opacity: 1
+        });
+
+        // Criar sistema de partículas
+        const sistemaEstrelas = new THREE.Points(geometriaEstrelas, materialEstrelas);
+        scene.add(sistemaEstrelas);
+
+        // Luz ambiente
+        const luzAmbiente = new THREE.AmbientLight(0x404040, 1.0);
+        scene.add(luzAmbiente);
+
+        // Configuração para rotação da câmera
+        let angle = 1; // Ângulo inicial
+        const radius = 200; // Distância da câmera ao centro da cena
+
+        // Animação
+        function animar() {
+            requestAnimationFrame(animar);
+
+            // Atualizar a rotação da câmera ao redor do centro
+            angle -= 0.003; // Velocidade de rotação
+            camera.position.x = Math.cos(angle) * radius; // Movimento no eixo X
+            camera.position.z = Math.sin(angle) * radius; // Movimento no eixo Z
+            camera.lookAt(10, 20, 30); // A câmera sempre olha para o centro da cena
+
+            // Renderizar a cena
+            renderer.render(scene, camera);
+        }
+
+        // Ajustar câmera
+        camera.position.z = radius;
+
+        // Iniciar animação
+        animar();
+
+        // Redimensionar canvas ao alterar o tamanho da janela
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>
